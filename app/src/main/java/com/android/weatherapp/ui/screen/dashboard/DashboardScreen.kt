@@ -1,0 +1,222 @@
+package com.android.weatherapp.ui.screen.dashboard
+
+import android.annotation.SuppressLint
+import android.util.Log
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Divider
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.android.weatherapp.R
+import com.android.weatherapp.data.remote.model.WeatherResponse
+import com.android.weatherapp.ui.composable.SearchAppBar
+import com.android.weatherapp.ui.MainViewModel
+import com.android.weatherapp.ui.theme.DarkBlue
+import com.android.weatherapp.ui.theme.LightGray
+import com.android.weatherapp.ui.theme.VeryLightGray
+import com.android.weatherapp.util.Converter.setImageResource
+import com.android.weatherapp.util.Converter.setLayoutBackgroundImage
+import com.android.weatherapp.util.Converter.timeConverter
+import com.android.weatherapp.util.flow.RequestState
+
+@OptIn(ExperimentalComposeUiApi::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+fun DashboardScreen(
+    viewModel: MainViewModel
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val allTasks by viewModel.weatherData.collectAsState()
+        Scaffold(
+            topBar = {
+                SearchAppBar(
+                    text =viewModel.searchTextState.value,
+                    onTextChange = { newText ->
+                        viewModel.searchTextState.value = newText
+                    },
+                    onSearchClicked = {
+                        viewModel.getWeather(viewModel.searchTextState.value)
+                        keyboardController?.hide()
+                    }
+                )
+            },
+            content = {
+                if (allTasks is RequestState.Success) {
+                DashboardScreenUi(allTasks as RequestState.Success<WeatherResponse>)
+                }
+            }
+
+        )
+}
+
+
+
+@Composable
+private fun DashboardScreenUi(allTasks: RequestState.Success<WeatherResponse>) {
+    Image(
+        painter = painterResource(id = setLayoutBackgroundImage(allTasks.data.weather?.get(0)?.icon.toString())),
+        contentDescription = null,
+        modifier = Modifier.fillMaxSize(),
+        contentScale = ContentScale.FillBounds
+    )
+    WeatherPage(allTasks.data)
+}
+
+@Composable
+fun WeatherPage(weatherResponse: WeatherResponse) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 64.dp, start = 16.dp, end = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        HeaderImage(weatherResponse)
+        MainInfo(weatherResponse)
+        InfoTable(weatherResponse)
+    }
+}
+
+@Composable
+fun HeaderImage(weatherResponse: WeatherResponse) {
+
+    Image(
+        painter = painterResource(id = setImageResource(weatherResponse.weather?.get(0)?.icon.toString())),
+        contentDescription = null,
+        modifier = Modifier.width(200.dp)
+    )
+
+}
+
+
+@Composable
+fun MainInfo(weatherResponse: WeatherResponse) {
+
+    Log.d("MainViewModel", "temp:::::    ${weatherResponse.main!!.temp?.toInt().toString()}")
+    Column(
+        modifier = Modifier.padding(top = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "${weatherResponse.main.temp!!.toInt()}°",
+            color = DarkBlue,
+            fontSize = 48.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = weatherResponse.name.toString(),
+            color = DarkBlue,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+
+        Text(
+            text = weatherResponse.weather!![0]!!.description.toString(),
+            color = DarkBlue,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Text(
+            text = "Day's maximum temp would hover at ${weatherResponse.main.temp_max!!.toInt()}°." +
+                    "\nwhile minimum temp is predicted to be ${weatherResponse.main.temp_min!!.toInt()}°.",
+            color = Color.Black,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+    }
+}
+
+
+@Composable
+fun InfoTable(weatherResponse: WeatherResponse) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .background(
+                VeryLightGray
+            )
+    ) {
+        Row(Modifier.padding(16.dp)) {
+            InfoItem(
+                iconRes = R.drawable.ic_humidity,
+                title = "Humidity",
+                subtitle = "${weatherResponse.main?.humidity.toString()}%",
+                modifier = Modifier.weight(
+                    1f
+                )
+            )
+            InfoItem(
+                iconRes = R.drawable.ic_wind,
+                title = "Wind Speed",
+                subtitle = "${weatherResponse.wind?.speed} km/h",
+                modifier = Modifier.weight(
+                    1f
+                )
+            )
+        }
+        Divider(color = LightGray, modifier = Modifier.padding(horizontal = 16.dp))
+        Row(Modifier.padding(16.dp)) {
+            InfoItem(
+                iconRes = R.drawable.ic_sun_half,
+                title = "Sunrise",
+                subtitle = timeConverter((weatherResponse.sys!!.sunrise)!!.toLong()),
+                modifier = Modifier.weight(
+                    1f
+                )
+            )
+            InfoItem(
+                iconRes = R.drawable.ic_sun_half,
+                title = "Sunset",
+                subtitle = timeConverter((weatherResponse.sys.sunset)!!.toLong()),
+                modifier = Modifier.weight(
+                    1f
+                )
+            )
+        }
+    }
+}
+
+
+@Composable
+fun InfoItem(@DrawableRes iconRes: Int, title: String, subtitle: String, modifier: Modifier) {
+    Row(modifier = modifier) {
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            modifier = Modifier
+                .padding(end = 8.dp)
+                .width(40.dp)
+        )
+        Column {
+            Text(title, color = Color.Gray)
+            Text(subtitle, color = DarkBlue, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
