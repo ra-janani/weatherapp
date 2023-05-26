@@ -54,4 +54,9 @@ object Converter {
         }
     }
 
+
+    const val CODE_200 = 200
+    const val CODE_201 = 201
+    const val CODE_401 = 401
+
 }

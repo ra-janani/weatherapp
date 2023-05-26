@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +35,7 @@ import com.android.weatherapp.R
 import com.android.weatherapp.data.remote.model.WeatherResponse
 import com.android.weatherapp.ui.composable.SearchAppBar
 import com.android.weatherapp.ui.MainViewModel
+import com.android.weatherapp.ui.displayToast
 import com.android.weatherapp.ui.theme.DarkBlue
 import com.android.weatherapp.ui.theme.LightGray
 import com.android.weatherapp.ui.theme.VeryLightGray
@@ -50,6 +52,7 @@ fun DashboardScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val allTasks by viewModel.weatherData.collectAsState()
+    val context = LocalContext.current
         Scaffold(
             topBar = {
                 SearchAppBar(
@@ -65,7 +68,12 @@ fun DashboardScreen(
             },
             content = {
                 if (allTasks is RequestState.Success) {
-                DashboardScreenUi(allTasks as RequestState.Success<WeatherResponse>)
+                    DashboardScreenUi(allTasks as RequestState.Success<WeatherResponse>)
+                }else if(allTasks is RequestState.ErrorMsg){
+                    displayToast(
+                        context,
+                        "Please Enter the Correct City name or Enter the city name with proper spaces"
+                    )
                 }
             }
 

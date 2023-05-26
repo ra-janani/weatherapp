@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.weatherapp.data.remote.model.WeatherResponse
+import com.android.weatherapp.util.Converter.CODE_200
 import com.android.weatherapp.util.flow.RequestState
 import com.android.weatherapp.util.flow.mutableEventFlow
 import com.example.socialcompose.repository.Repository
@@ -54,12 +55,16 @@ class MainViewModel @Inject constructor(
             _weatherData.value = RequestState.Loading
 
             try {
-                viewModelScope.launch {
-                    val response = repository.getWeather(city)
-                    if (response != null) {
-                        _weatherData.value = RequestState.Success(response)
+
+                val response = repository.getWeather(city)
+                when (response.code()) {
+                    CODE_200 ->
+                        if (response.isSuccessful) {
+                            _weatherData.value = RequestState.Success(response.body())
+                        }
+                    else -> {
+                        _weatherData.value = RequestState.ErrorMsg(response.message())
                     }
-                    Log.d("MainViewModel", "response:::::    $response")
                 }
             } catch (e: Exception) {
                 _weatherData.value = RequestState.Error(e)
