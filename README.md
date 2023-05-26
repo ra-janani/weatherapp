@@ -24,7 +24,7 @@ Technologies Used::
 
 Day Weather| Night Weather
 --- | ---
-<img width=250 height =500 src="" /> | <img width=250 height =500 src=""/>
+<img width=250 height =500 src="https://github.com/ra-janani/weatherapp/assets/87525936/0d55cc85-4497-4ef0-8e11-a8a3d181e48a" /> | <img width=250 height =500 src="https://github.com/ra-janani/weatherapp/assets/87525936/7473b464-a141-4bd1-bedf-9804de36a9a5"/>
 --- | ---
 
 ## Api 📦
