@@ -5,12 +5,7 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
@@ -32,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.weatherapp.R
-import com.android.weatherapp.data.remote.model.WeatherResponse
+import com.android.weatherapp.data.remote.model.weather.WeatherResponse
 import com.android.weatherapp.ui.composable.SearchAppBar
 import com.android.weatherapp.ui.MainViewModel
 import com.android.weatherapp.ui.displayToast
@@ -45,7 +40,7 @@ import com.android.weatherapp.util.Converter.timeConverter
 import com.android.weatherapp.util.flow.RequestState
 
 @OptIn(ExperimentalComposeUiApi::class)
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "SuspiciousIndentation")
 @Composable
 fun DashboardScreen(
     viewModel: MainViewModel
@@ -61,7 +56,7 @@ fun DashboardScreen(
                         viewModel.searchTextState.value = newText
                     },
                     onSearchClicked = {
-                        viewModel.getWeather(viewModel.searchTextState.value)
+                        viewModel.getLatLong(viewModel.searchTextState.value)
                         keyboardController?.hide()
                     }
                 )
@@ -70,6 +65,17 @@ fun DashboardScreen(
                 if (allTasks is RequestState.Success) {
                     DashboardScreenUi(allTasks as RequestState.Success<WeatherResponse>)
                 }else if(allTasks is RequestState.ErrorMsg){
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.no_connection),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .size(200.dp)
+                                .align(Alignment.Center),
+                        )
+                    }
                     displayToast(
                         context,
                         "Please Enter the Correct City name or Enter the city name with proper spaces"

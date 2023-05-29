@@ -1,8 +1,8 @@
 package com.android.weatherapp.data.repo
 
 import com.android.weatherapp.data.remote.api.ApiRequest
-import com.android.weatherapp.data.remote.model.Main
-import com.android.weatherapp.data.remote.model.WeatherResponse
+import com.android.weatherapp.data.remote.model.weather.Main
+import com.android.weatherapp.data.remote.model.weather.WeatherResponse
 import com.android.weatherapp.data.remote.repo.RepositoryImpl
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -11,6 +11,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import retrofit2.Response
 
 class RepositoryImplTest {
 
@@ -22,6 +23,8 @@ class RepositoryImplTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
     }
+
+
 
 
     @Test
@@ -42,12 +45,12 @@ class RepositoryImplTest {
             main = Main(36.64, 982, 41, 1004, 1004, 34.53, 34.53, 31.53)
         )
 
-        Mockito.`when`(apiRequest.getWeather("berlin")).thenReturn(weatherResult)
+        Mockito.`when`(apiRequest.getWeatherByLatLong(51.5073219,-0.1276474)).thenReturn(Response.success(weatherResult))
 
 
         val sut = RepositoryImpl(apiRequest)
-        val result = sut.getWeather("berlin")
-        Assert.assertEquals("berlin", result?.name)
+        val result = sut.getWeatherByLatLong(51.5073219,-0.1276474)
+        Assert.assertEquals("berlin", result.body()!!.name)
     }
 
     @Test
@@ -68,12 +71,12 @@ class RepositoryImplTest {
             main = Main(36.64, 982, 41, 1004, 1004, 34.53, 34.53, 31.53)
         )
 
-        Mockito.`when`(apiRequest.getWeather("berlin")).thenReturn(weatherResult)
+        Mockito.`when`(apiRequest.getWeatherByLatLong(51.5073219,-0.1276474)).thenReturn(Response.success(weatherResult))
 
 
         val sut = RepositoryImpl(apiRequest)
-        val result = sut.getWeather("berlin")
-        val check = result?.main?.temp_max?.toInt()!! > result?.main?.temp_min?.toInt()!!
+        val result =  sut.getWeatherByLatLong(51.5073219,-0.1276474)
+        val check = result.body()!!.main?.temp_max?.toInt()!! > result.body()!!.main?.temp_min?.toInt()!!
         Assert.assertEquals(true, check)
     }
 

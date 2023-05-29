@@ -1,10 +1,13 @@
 package com.android.weatherapp.di.module
 
+import android.app.Application
 import com.example.socialcompose.repository.Repository
 import com.google.gson.Gson
 import com.android.weatherapp.data.remote.api.ApiDetails
 import com.android.weatherapp.data.remote.api.ApiRequest
 import com.android.weatherapp.data.remote.repo.RepositoryImpl
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,6 +65,12 @@ class AppModule {
     @Provides
     fun provideRepository(apiRequest: ApiRequest): Repository {
         return RepositoryImpl(apiRequest)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFusedLocationProviderClient(app: Application): FusedLocationProviderClient {
+        return LocationServices.getFusedLocationProviderClient(app)
     }
 
 

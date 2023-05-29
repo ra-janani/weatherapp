@@ -1,11 +1,14 @@
 package com.android.weatherapp.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -25,10 +28,22 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        permissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) {
+            viewModel.loadCurrentLocationWeather()
+        }
+        permissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
+        )
         setContent {
             weatherappTheme {
                 Surface {
@@ -37,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 }
 
             }
-            viewModel.getWeather("London")
+            //viewModel.getWeather("London")
         }
     }
 

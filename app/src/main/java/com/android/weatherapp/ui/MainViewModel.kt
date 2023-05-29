@@ -5,8 +5,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.weatherapp.data.remote.model.WeatherResponse
+import com.android.weatherapp.data.remote.model.weather.WeatherResponse
 import com.android.weatherapp.util.Converter.CODE_200
+import com.android.weatherapp.util.LocationTracker
 import com.android.weatherapp.util.flow.RequestState
 import com.android.weatherapp.util.flow.mutableEventFlow
 import com.example.socialcompose.repository.Repository
@@ -21,12 +22,13 @@ import javax.inject.Inject
 @HiltViewModel
 
 class MainViewModel @Inject constructor(
-    private val repository: Repository
+    private val repository: Repository,
+    private val locationTracker: LocationTracker
 ) : ViewModel() {
 
 
-    var latitude: String? = null
-    var longitude: String? = null
+    var latitude: Double? = null
+    var longitude: Double? = null
 
     companion object {
         private const val SPLASH_DURATION_IN_MILLIS = 2500L
@@ -42,6 +44,35 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun loadCurrentLocationWeather() {
+        viewModelScope.launch {
+
+            locationTracker.getCurrentLocation()?.let { location ->
+
+                _weatherData.value = RequestState.Loading
+                try {
+                    val response = repository.getWeatherByLatLong(location.latitude, location.longitude)
+                    when (response.code()) {
+                        CODE_200 ->
+                            if (response.isSuccessful) {
+                                _weatherData.value = RequestState.Success(response.body())
+                            }
+
+                        else -> {
+                            _weatherData.value = RequestState.ErrorMsg(response.message())
+                        }
+                    }
+                } catch (e: Exception) {
+                    _weatherData.value = RequestState.Error(e)
+                }
+            } ?: kotlin.run {
+                _weatherData.value = RequestState.ErrorMsg("Couldn't retrieve location. Make sure to grant permission and enable GPS.")
+                getWeatherByLatLong( 51.5073219,
+                    -0.1276474,)
+            }
+        }
+    }
+
 
     val searchTextState: MutableState<String> = mutableStateOf("")
 
@@ -49,7 +80,7 @@ class MainViewModel @Inject constructor(
         MutableStateFlow<RequestState<WeatherResponse?>>(RequestState.Idle)
     val weatherData: StateFlow<RequestState<WeatherResponse?>> = _weatherData
 
-    fun getWeather(city: String) {
+/*    fun getWeather(city: String) {
 
         viewModelScope.launch {
             _weatherData.value = RequestState.Loading
@@ -62,6 +93,64 @@ class MainViewModel @Inject constructor(
                         if (response.isSuccessful) {
                             _weatherData.value = RequestState.Success(response.body())
                         }
+                    else -> {
+                        _weatherData.value = RequestState.ErrorMsg(response.message())
+                    }
+                }
+            } catch (e: Exception) {
+                _weatherData.value = RequestState.Error(e)
+            }
+        }
+    }*/
+
+    fun getLatLong(city: String) {
+        //  Log.d("Viewmodel geoData", geoData.toString())
+
+        viewModelScope.launch {
+            _weatherData.value = RequestState.Loading
+
+            try {
+                val response = repository.getLatLong(city)
+                when (response.code()) {
+                    CODE_200 ->
+                        if (response.isSuccessful&&response.body()!=null) {
+                            // _weatherData.value = RequestState.Success(response.body())
+                            Log.d("Viewmodel geoData", response.body()!!.toString())
+                            val lat= response.body()!![0].lat
+                            val lon= response.body()!![0].lon
+                            if (lat != null && lon != null) {
+
+                                getWeatherByLatLong(lat,lon)
+
+                            }
+
+                        }
+
+                    else -> {
+                        _weatherData.value = RequestState.ErrorMsg(response.message())
+                    }
+                }
+            } catch (e: Exception) {
+                Log.d("Exception", e.toString())
+                _weatherData.value = RequestState.Error(e)
+
+            }
+        }
+    }
+
+    fun getWeatherByLatLong(lat: Double,lon:Double) {
+
+        viewModelScope.launch {
+            _weatherData.value = RequestState.Loading
+
+            try {
+                val response = repository.getWeatherByLatLong(lat,lon)
+                when (response.code()) {
+                    CODE_200 ->
+                        if (response.isSuccessful) {
+                            _weatherData.value = RequestState.Success(response.body())
+                        }
+
                     else -> {
                         _weatherData.value = RequestState.ErrorMsg(response.message())
                     }

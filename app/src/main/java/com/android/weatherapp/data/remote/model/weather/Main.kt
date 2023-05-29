@@ -1,4 +1,4 @@
-package com.android.weatherapp.data.remote.model
+package com.android.weatherapp.data.remote.model.weather
 
 
 import androidx.annotation.Keep
