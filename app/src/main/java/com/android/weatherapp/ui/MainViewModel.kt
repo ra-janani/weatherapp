@@ -51,7 +51,8 @@ class MainViewModel @Inject constructor(
 
                 _weatherData.value = RequestState.Loading
                 try {
-                    val response = repository.getWeatherByLatLong(location.latitude, location.longitude)
+                    val response =
+                        repository.getWeatherByLatLong(location.latitude, location.longitude)
                     when (response.code()) {
                         CODE_200 ->
                             if (response.isSuccessful) {
@@ -66,9 +67,12 @@ class MainViewModel @Inject constructor(
                     _weatherData.value = RequestState.Error(e)
                 }
             } ?: kotlin.run {
-                _weatherData.value = RequestState.ErrorMsg("Couldn't retrieve location. Make sure to grant permission and enable GPS.")
-                getWeatherByLatLong( 51.5073219,
-                    -0.1276474,)
+                _weatherData.value =
+                    RequestState.ErrorMsg("Couldn't retrieve location. Make sure to grant permission and enable GPS.")
+                getWeatherByLatLong(
+                    51.5073219,
+                    -0.1276474,
+                )
             }
         }
     }
@@ -80,31 +84,8 @@ class MainViewModel @Inject constructor(
         MutableStateFlow<RequestState<WeatherResponse?>>(RequestState.Idle)
     val weatherData: StateFlow<RequestState<WeatherResponse?>> = _weatherData
 
-/*    fun getWeather(city: String) {
-
-        viewModelScope.launch {
-            _weatherData.value = RequestState.Loading
-
-            try {
-
-                val response = repository.getWeather(city)
-                when (response.code()) {
-                    CODE_200 ->
-                        if (response.isSuccessful) {
-                            _weatherData.value = RequestState.Success(response.body())
-                        }
-                    else -> {
-                        _weatherData.value = RequestState.ErrorMsg(response.message())
-                    }
-                }
-            } catch (e: Exception) {
-                _weatherData.value = RequestState.Error(e)
-            }
-        }
-    }*/
 
     fun getLatLong(city: String) {
-        //  Log.d("Viewmodel geoData", geoData.toString())
 
         viewModelScope.launch {
             _weatherData.value = RequestState.Loading
@@ -113,14 +94,13 @@ class MainViewModel @Inject constructor(
                 val response = repository.getLatLong(city)
                 when (response.code()) {
                     CODE_200 ->
-                        if (response.isSuccessful&&response.body()!=null) {
-                            // _weatherData.value = RequestState.Success(response.body())
-                            Log.d("Viewmodel geoData", response.body()!!.toString())
-                            val lat= response.body()!![0].lat
-                            val lon= response.body()!![0].lon
+                        if (response.isSuccessful && response.body() != null) {
+
+                            val lat = response.body()!![0].lat
+                            val lon = response.body()!![0].lon
                             if (lat != null && lon != null) {
 
-                                getWeatherByLatLong(lat,lon)
+                                getWeatherByLatLong(lat, lon)
 
                             }
 
@@ -138,13 +118,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getWeatherByLatLong(lat: Double,lon:Double) {
+    fun getWeatherByLatLong(lat: Double, lon: Double) {
 
         viewModelScope.launch {
             _weatherData.value = RequestState.Loading
 
             try {
-                val response = repository.getWeatherByLatLong(lat,lon)
+                val response = repository.getWeatherByLatLong(lat, lon)
                 when (response.code()) {
                     CODE_200 ->
                         if (response.isSuccessful) {

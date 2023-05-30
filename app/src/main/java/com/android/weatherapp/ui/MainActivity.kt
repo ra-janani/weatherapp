@@ -52,10 +52,9 @@ class MainActivity : ComponentActivity() {
                 }
 
             }
-            //viewModel.getWeather("London")
+
         }
     }
-
 
 
     @Composable
@@ -88,13 +87,9 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
-
-
-
 }
 
-fun displayToast(context: Context,msg:String) {
+fun displayToast(context: Context, msg: String) {
     Toast.makeText(
         context,
         msg,
