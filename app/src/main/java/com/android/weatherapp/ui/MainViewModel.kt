@@ -1,5 +1,6 @@
 package com.android.weatherapp.ui
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +70,7 @@ class MainViewModel @Inject constructor(
             } ?: kotlin.run {
                 _weatherData.value =
                     RequestState.ErrorMsg("Couldn't retrieve location. Make sure to grant permission and enable GPS.")
-                getWeatherByLatLong(
+               getWeatherByLatLong(
                     51.5073219,
                     -0.1276474,
                 )
@@ -85,41 +86,51 @@ class MainViewModel @Inject constructor(
     val weatherData: StateFlow<RequestState<WeatherResponse?>> = _weatherData
 
 
-    fun getLatLong(city: String) {
+    fun getLatLong(city:String) {
 
         viewModelScope.launch {
-            _weatherData.value = RequestState.Loading
+                _weatherData.value = RequestState.Loading
 
-            try {
-                val response = repository.getLatLong(city)
-                when (response.code()) {
-                    CODE_200 ->
-                        if (response.isSuccessful && response.body() != null) {
+                try {
+                    val response = repository.getLatLong(city)
+                    when (response.code()) {
+                        CODE_200 ->
+                            if (response.isSuccessful && response.body() != null) {
+                                if(response.body()!!.isNotEmpty()){
 
-                            val lat = response.body()!![0].lat
-                            val lon = response.body()!![0].lon
-                            if (lat != null && lon != null) {
+                                    val lat = response.body()!![0].lat
+                                    val lon = response.body()!![0].lon
+                                    if (lat != null && lon != null) {
 
-                                getWeatherByLatLong(lat, lon)
+                                        getWeatherByLatLong(lat, lon)
+
+                                    }
+
+                                }
+                                else{
+                                    _weatherData.value = RequestState.ErrorMsg("Please Enter the Correct City name")
+                                }
 
                             }
 
+                        else -> {
+                            _weatherData.value = RequestState.ErrorMsg(response.message())
                         }
-
-                    else -> {
-                        _weatherData.value = RequestState.ErrorMsg(response.message())
                     }
-                }
-            } catch (e: Exception) {
-                Log.d("Exception", e.toString())
-                _weatherData.value = RequestState.Error(e)
+                } catch (e: Exception) {
+                    Log.d("Exception", e.toString())
+                    _weatherData.value = RequestState.Error(e)
 
-            }
+                }
+
+
+
         }
     }
-
+fun setIdleState(){
+     _weatherData.value = RequestState.Idle
+ }
     fun getWeatherByLatLong(lat: Double, lon: Double) {
-
         viewModelScope.launch {
             _weatherData.value = RequestState.Loading
 

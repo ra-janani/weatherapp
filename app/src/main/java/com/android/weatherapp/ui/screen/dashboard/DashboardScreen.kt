@@ -48,23 +48,25 @@ fun DashboardScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val allTasks by viewModel.weatherData.collectAsState()
     val context = LocalContext.current
-        Scaffold(
-            topBar = {
-                SearchAppBar(
-                    text =viewModel.searchTextState.value,
-                    onTextChange = { newText ->
-                        viewModel.searchTextState.value = newText
-                    },
-                    onSearchClicked = {
-                        viewModel.getLatLong(viewModel.searchTextState.value)
-                        keyboardController?.hide()
-                    }
-                )
-            },
-            content = {
-                if (allTasks is RequestState.Success) {
+    Scaffold(
+        topBar = {
+            SearchAppBar(
+                text = viewModel.searchTextState.value,
+                onTextChange = { newText ->
+                    viewModel.searchTextState.value = newText
+                },
+                onSearchClicked = {
+                    viewModel.getLatLong(viewModel.searchTextState.value)
+                    keyboardController?.hide()
+                }
+            )
+        },
+        content = {
+            when (allTasks) {
+                is RequestState.Success -> {
                     DashboardScreenUi(allTasks as RequestState.Success<WeatherResponse>)
-                }else if(allTasks is RequestState.ErrorMsg){
+                }
+                is RequestState.ErrorMsg -> {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -77,15 +79,20 @@ fun DashboardScreen(
                         )
                     }
                     displayToast(
-                        context,
-                        "Please Enter the Correct City name or Enter the city name with proper spaces"
+                        context, (allTasks as RequestState.ErrorMsg).errorMsg.toString()
+
                     )
+                    viewModel.setIdleState()
+                }
+
+                else -> {
+
                 }
             }
+        }
 
-        )
+    )
 }
-
 
 
 @Composable

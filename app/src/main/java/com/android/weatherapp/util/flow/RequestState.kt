@@ -7,4 +7,6 @@ sealed class RequestState<out T> {
     data class Error(val error: Throwable) : RequestState<Nothing>()
 
     data class ErrorMsg(val errorMsg: String) : RequestState<Nothing>()
+
+    data class NoInternetMsg(val errorMsg: String="No Internet"):RequestState<Nothing>()
 }
